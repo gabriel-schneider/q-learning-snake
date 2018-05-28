@@ -19,18 +19,20 @@ class SnakeGame(Environment):
 
     UNIT_SIZE = 32
 
+    COLORS = {
+        DATA_WALL:         pygame.Color(40, 40, 40),
+        DATA_EMPTY:        (pygame.Color(39, 174, 96), pygame.Color(46, 204, 113)),
+        DATA_SNAKE:        pygame.Color(52, 152, 219),
+        DATA_APPLE:        pygame.Color(231, 76, 60)
+    }
+
     def __init__(self, agent, world_name='default', world_directory='data/worlds', ticks=5):
         super().__init__(agent)
 
         self._abort = False
         self._is_over = False
+
         self._ticks = ticks
-        self._colors = {
-            self.DATA_WALL:         pygame.Color(40, 40, 40),
-            self.DATA_EMPTY:        (pygame.Color(39, 174, 96), pygame.Color(46, 204, 113)),
-            self.DATA_SNAKE:        pygame.Color(52, 152, 219),
-            self.DATA_APPLE:        pygame.Color(231, 76, 60)
-        }
 
         # World
         self._size = 0
@@ -98,11 +100,11 @@ class SnakeGame(Environment):
         for x in range(self._size):
             for y in range(self._size):
                 value = self._data[x][y]
-                if isinstance(self._colors[value], tuple):
-                    colors = self._colors[value]
+                if isinstance(self.COLORS[value], tuple):
+                    colors = self.COLORS[value]
                     color = colors[(x + y) % len(colors)]
                 else:
-                    color = self._colors[value]
+                    color = self.COLORS[value]
                 pygame.draw.rect(self._world_surface, color, (x * self.UNIT_SIZE,
                                                               y * self.UNIT_SIZE, self.UNIT_SIZE, self.UNIT_SIZE))
 
