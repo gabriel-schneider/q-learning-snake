@@ -26,7 +26,7 @@ class SnakeGame(Environment):
         DATA_APPLE:        pygame.Color(231, 76, 60)
     }
 
-    def __init__(self, agent, world_name='default', world_directory='data/worlds', ticks=5):
+    def __init__(self, agent, world_name='default', world_directory='data/worlds', ticks=5, editor=False):
         super().__init__(agent)
 
         self._abort = False
@@ -41,10 +41,13 @@ class SnakeGame(Environment):
         self._world_directory = world_directory
         self._world_surface = None
 
+        self._editor = editor
+
         self._score = 0
         self._objective = 0
 
-        self._snake = Snake()
+        length = 1 if self._editor else Snake.DEFAULT_LENGTH
+        self._snake = Snake(length=length)
         self._apple = Vector(0, 0)
 
         self.load(world_name)
@@ -84,6 +87,19 @@ class SnakeGame(Environment):
                     if self._data[x][y] == self.DATA_EMPTY:
                         self._objective += 1
 
+    def save(self, filename):
+        with open(filename, 'w') as file:
+            world = {
+                'snake': {
+                    'position': [self._snake.position().x, self._snake.position().y],
+                    'direction': [self._snake.direction.x, self._snake.direction.y],
+                    'length': Snake.DEFAULT_LENGTH
+                },
+                'size': self._size,
+                'data': self._data
+            }
+            json.dump(world, file)
+
     def start_up(self):
         """Start pygame and output options."""
         pygame.init()
@@ -96,6 +112,7 @@ class SnakeGame(Environment):
 
     def _build_world(self):
         """Generate the world data into a pygame surface."""
+
         self._world_surface = pygame.Surface(self._display.get_size())
         for x in range(self._size):
             for y in range(self._size):
@@ -136,17 +153,22 @@ class SnakeGame(Environment):
                     self._is_over = True
                     self._abort = True
                     return
+                elif event.key == pygame.K_s:
+                    self.save('data/worlds/new_world.json')
 
-            if event.type == pygame.MOUSEBUTTONUP:
-                if event.button == 1:
+            if self._editor:
+                if event.type == pygame.MOUSEBUTTONUP:
                     pos = tuple(map(lambda x: math.floor(
                         x / self.UNIT_SIZE), pygame.mouse.get_pos()))
                     x, y = pos[0], pos[1]
-                    value = self._data[x][y]
-                    value = self.DATA_EMPTY if value == self.DATA_WALL else self.DATA_WALL
-                    self._data[x][y] = value
-                    self._initial_data[x][y] = value
-                    self._build_world()
+                    if event.button == 1:
+                        value = self._data[x][y]
+                        value = self.DATA_EMPTY if value == self.DATA_WALL else self.DATA_WALL
+                        self._data[x][y] = value
+                        self._initial_data[x][y] = value
+                        self._build_world()
+                    if event.button == 3:
+                        self._snake._body[0] = Vector(x, y)
         self._draw()
         pygame.display.flip()
 
@@ -158,8 +180,9 @@ class SnakeGame(Environment):
                 142, 68, 173) if index == 0 else pygame.Color('white')
             pygame.draw.rect(self._display, color, (part.x * self.UNIT_SIZE,
                                                     part.y * self.UNIT_SIZE, self.UNIT_SIZE, self.UNIT_SIZE))
-        pygame.draw.rect(self._display, pygame.Color(231, 76, 60), (self._apple.x *
-                                                                    self.UNIT_SIZE, self._apple.y * self.UNIT_SIZE, self.UNIT_SIZE, self.UNIT_SIZE))
+        if not self._editor:
+            pygame.draw.rect(self._display, pygame.Color(231, 76, 60), (self._apple.x *
+                                                                        self.UNIT_SIZE, self._apple.y * self.UNIT_SIZE, self.UNIT_SIZE, self.UNIT_SIZE))
 
     def _check_world(self, x=0, y=0, at=None):
         """Return the object at a specific world position"""

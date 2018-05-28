@@ -73,7 +73,7 @@ def train(args):
     if args.config is None:
         worlds = [
             {
-                'name': 'default',
+                'name': args.world,
                 'episodes': args.episodes
             }
         ]
@@ -126,6 +126,13 @@ def run(args):
     print('Done.')
 
 
+def editor(args):
+    environment = SnakeGame(None, args.world, ticks=60, editor=True)
+    environment.start_up()
+    while not environment.is_over():
+        environment._update()
+
+
 parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers()
 
@@ -155,8 +162,14 @@ run_parser = subparsers.add_parser('run')
 run_parser.add_argument(
     '--memory', type=str, help='Memory JSON filename')
 run_parser.add_argument(
-    '--world', type=str, default=DEFAULT_WORLD, help='World JSON filename')
+    '--world', type=str, default=None, help='World JSON filename')
 run_parser.set_defaults(func=run)
+
+# Editor
+editor_parser = subparsers.add_parser('editor')
+editor_parser.add_argument(
+    '--world', type=str, help='World JSON filename')
+editor_parser.set_defaults(func=editor)
 
 if __name__ == '__main__':
     args = parser.parse_args()
