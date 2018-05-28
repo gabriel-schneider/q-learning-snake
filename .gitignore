@@ -1,0 +1,4 @@
+data/memories/memories_*
+*.pyo
+*.pio
+__pycache__
