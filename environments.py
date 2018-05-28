@@ -196,8 +196,8 @@ class SnakeGame(Environment):
 
         sensors = []
         direction = self._snake.direction.inverted()
-        for _ in range(3):
-            direction.rotate(math.radians(90))
+        for _ in range(7):
+            direction.rotate(math.radians(45))
             value, position = self._raycast_world(self._snake.position(
             ), direction, (self.DATA_APPLE, self.DATA_SNAKE, self.DATA_WALL))
 
@@ -252,7 +252,7 @@ class SnakeGame(Environment):
             self.start_up()
         for episode in range(episodes):
             if self._abort:
-                break
+                return
             self.reset()
             while not self.is_over() and not self._abort:
                 state = self.observe()
@@ -271,6 +271,8 @@ class SnakeGame(Environment):
 
                 self.agent.remember(
                     Memory(state, action, reward, new_state))
+        if output:
+            pygame.quit()
 
     def run(self, epsilon=0, output=True):
         if output:

@@ -1,7 +1,8 @@
 import datetime
 import argparse
 from decimal import *
-
+import simplejson as json
+import pygame
 from learning import Agent, Action
 from environments import SnakeGame
 
@@ -9,6 +10,8 @@ DEFAULT_LEARN = 0.6
 DEFAULT_DISCOUNT = 0.9
 DEFAULT_WORLD = 'default'
 DEFAULT_EPISODES = 100
+DEFAULT_SPEED = 30
+DEFAULT_REPEAT = 1
 
 # Define witch actions are available
 ACTIONS = [
@@ -20,8 +23,27 @@ ACTIONS = [
 
 def train(args):
 
-    learn = Decimal(args.learn)
-    discount = Decimal(args.discount)
+    learn = args.learn
+    discount = args.discount
+    repeat = args.repeat
+
+    if args.config is not None:
+        with open(f'data/training/{args.config}.json', 'r') as file:
+            config = json.load(file)
+            worlds = config['worlds']
+            learn = Decimal(config.get('learning', DEFAULT_LEARN))
+            discount = Decimal(config.get('discount', DEFAULT_DISCOUNT))
+            repeat = config.get('repeat', DEFAULT_REPEAT)
+
+    if learn is None:
+        learn = DEFAULT_LEARN
+
+    if discount is None:
+        discount = DEFAULT_DISCOUNT
+
+    if repeat is None:
+        repeat = DEFAULT_REPEAT
+
     world = args.world
 
     # Create a agent with the available actions
@@ -39,17 +61,41 @@ def train(args):
     else:
         args.memory = f'memories_{date}'
 
-    # Create the snake game environment
-    environment = SnakeGame(agent, world)
-
     print('Parameters:\n')
     print(f'\t Learning Rate: {round(learn, 3)}')
     print(f'\t Discount Factor: {round(discount, 3)}')
-    print(f'\t Episodes: {args.episodes}')
+    if repeat == -1:
+        print(f'\t Repeat: forever')
+    else:
+        print(f'\t Repeat: {repeat} times')
     print('\nStarting...')
 
-    # Train it
-    environment.train(args.episodes)
+    if args.config is None:
+        worlds = [
+            {
+                'name': 'default',
+                'episodes': args.episodes
+            }
+        ]
+
+    episodes_total = 0
+    try:
+        while repeat != 0:
+            for world in worlds:
+                name, episodes = world['name'], world['episodes']
+                pygame.display.set_caption(f'{name} - {episodes}')
+                print(
+                    f'Training at {name} for {episodes} episodes... ({episodes_total})')
+                environment = SnakeGame(agent, name, ticks=args.speed)
+                environment.train(episodes)
+                episodes_total += episodes
+                if environment._abort:
+                    break
+            if environment._abort:
+                break
+            repeat -= 1
+    except KeyboardInterrupt:
+        pygame.quit()
 
     print('Saving...')
     agent.memories.save(f'data/memories/{args.memory}.json')
@@ -86,16 +132,23 @@ subparsers = parser.add_subparsers()
 # Training
 train_parser = subparsers.add_parser('train')
 train_parser.add_argument(
-    '--learn', type=float, default=DEFAULT_LEARN, help='Learnig Rate')
+    '--learn', type=float, default=None, help='Learnig Rate')
 train_parser.add_argument('--discount', type=float,
-                          default=DEFAULT_DISCOUNT, help='Discount Factor')
+                          default=None, help='Discount Factor')
 train_parser.add_argument(
     '--memory', type=str, default=None, help='Memory JSON filename')
 train_parser.add_argument(
     '--world', type=str, default=DEFAULT_WORLD, help='World JSON filename')
 train_parser.add_argument(
     '--episodes', type=int, default=DEFAULT_EPISODES, help='Number of episodes to train')
+train_parser.add_argument(
+    '--config', type=str, default=None, help='Config JSON file for training')
+train_parser.add_argument(
+    '--speed', type=int, default=DEFAULT_SPEED, help='Speed to visualize the training')
+train_parser.add_argument(
+    '--repeat', type=int, default=None, help='How many times the training will be repeated')
 train_parser.set_defaults(func=train)
+
 
 # Running
 run_parser = subparsers.add_parser('run')
