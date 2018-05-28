@@ -195,18 +195,25 @@ class SnakeGame(Environment):
         return (self._check_world(at=position), position)
 
     def observe(self):
+        def distance(x): return min(math.floor(round(x) / 2), 3)
 
-        sensors = []
-        direction = self._snake.direction.inverted()
-        for _ in range(7):
+        state = []
+        direction = self._snake.direction.rotated(math.radians(-90))
+        snake = self._snake.position()
+        apple = self._apple
+        for _ in range(5):
             direction.rotate(math.radians(45))
-            value, position = self._raycast_world(self._snake.position(
-            ), direction, (self.DATA_APPLE, self.DATA_SNAKE, self.DATA_WALL))
+            value, position = self._raycast_world(
+                snake, direction, (self.DATA_APPLE, self.DATA_SNAKE, self.DATA_WALL))
 
-            v = min(math.floor(
-                round(self._snake.position().distance(position)) / 2), 3)
-            sensors.append((value, v))
-        return tuple(sensors)
+            state.append(
+                (value, distance(snake.distance(position))))
+
+        angle = round(math.degrees(Vector(snake.x - apple.x,
+                                          snake.y - apple.y).angle()) / 45) * 45
+        state.append(
+            (angle, distance(self._snake.position().distance(self._apple))))
+        return tuple(state)
 
     def reset(self):
 
