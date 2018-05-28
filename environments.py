@@ -223,7 +223,6 @@ class SnakeGame(Environment):
         state = []
         direction = self._snake.direction.rotated(math.radians(-90))
         snake = self._snake.position()
-        apple = self._apple
         for _ in range(5):
             direction.rotate(math.radians(45))
             value, position = self._raycast_world(
@@ -231,11 +230,6 @@ class SnakeGame(Environment):
 
             state.append(
                 (value, distance(snake.distance(position))))
-
-        angle = round(math.degrees(Vector(snake.x - apple.x,
-                                          snake.y - apple.y).angle()) / 45) * 45
-        state.append(
-            (angle, distance(self._snake.position().distance(self._apple))))
         return tuple(state)
 
     def reset(self):
@@ -259,22 +253,21 @@ class SnakeGame(Environment):
         for part in self._snake._body[1:]:
             if part == self._snake.position():
                 self._is_over = True
-                return Decimal('-10.0')
+                return Decimal('-50.0')
 
         if self._data[self._snake.position().x][self._snake.position().y] == self.DATA_WALL:
             self._is_over = True
-            return Decimal('-10.0')
+            return Decimal('-50.0')
 
         if self._snake.position() == self._apple:
             self._snake._grow += 1
             self._score += 1
             if self._score >= self._objective:
                 self._is_over = True
-                return Decimal('10.0')
+                return Decimal('50.0')
             self._move_apple()
-            return Decimal('5.0')
-        # -round(self._snake.position().distance(self._apple)) / 16
-        return Decimal('0')
+            return Decimal('20.0')
+        return Decimal(self._snake.position().distance(self._apple) / self._size * -1)
 
     def is_over(self):
         return self._is_over
