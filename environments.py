@@ -234,12 +234,12 @@ class SnakeGame(Environment):
             return Decimal('-10.0')
 
         if self._snake.position() == self._apple:
-            self._move_apple()
             self._snake._grow += 1
             self._score += 1
             if self._score >= self._objective:
                 self._is_over = True
                 return Decimal('10.0')
+            self._move_apple()
             return Decimal('5.0')
         # -round(self._snake.position().distance(self._apple)) / 16
         return Decimal('0')
