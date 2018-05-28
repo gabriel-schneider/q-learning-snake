@@ -1,0 +1,31 @@
+{
+	"learning": 0.6,
+	"discount": 0.8,
+	"repeat": -1,
+	"worlds": [
+		{
+			"name": "close",
+			"episodes": 200
+		},
+		{
+			"name": "default",
+			"episodes": 200
+		},
+		{
+			"name": "dot",
+			"episodes": 200
+		},
+		{
+			"name": "cross",
+			"episodes": 200
+		},
+		{
+			"name": "pathway",
+			"episodes": 200
+		},
+		{
+			"name": "coliseum",
+			"episodes": 200
+		}
+	]
+}
