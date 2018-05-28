@@ -104,7 +104,7 @@ class MemoryTable:
         '''Save Q-Table to a JSON file.'''
         file = open(filename, 'w')
         table = {}
-        for key, value in self._memories.memories.items():
+        for key, value in self._memories.items():
             table[str(key)] = [[action.value, action.weight]
                                for action in value]
 
