@@ -39,11 +39,13 @@ class Environment:
         """Return if the current environment state should end the episode."""
         pass
 
-    def run(self, epsilon=0):
+    def run(self, epsilon=0, output=True):
         """Run the environment without training the agent."""
+        pass
 
-    def train(self, episodes, epsilon=0):
+    def train(self, episodes, epsilon=0, output=True):
         """Run the environment training the agent."""
+        pass
 
 
 class Action:

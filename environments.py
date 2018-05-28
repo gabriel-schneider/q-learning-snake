@@ -4,7 +4,7 @@ import math
 import random
 import pygame
 
-from learning import Environment
+from learning import Environment, Memory
 from snake import Snake, Vector
 
 from decimal import *
@@ -19,9 +19,10 @@ class SnakeGame(Environment):
 
     UNIT_SIZE = 32
 
-    def __init__(self, agent, world_name='default', output=True, world_directory='data/worlds', ticks=5):
+    def __init__(self, agent, world_name='default', world_directory='data/worlds', ticks=5):
         super().__init__(agent)
 
+        self._abort = False
         self._is_over = False
         self._ticks = ticks
         self._colors = {
@@ -30,8 +31,6 @@ class SnakeGame(Environment):
             self.DATA_SNAKE:        pygame.Color(52, 152, 219),
             self.DATA_APPLE:        pygame.Color(231, 76, 60)
         }
-
-        self.output = output
 
         # World
         self._size = 0
@@ -47,9 +46,6 @@ class SnakeGame(Environment):
         self._apple = Vector(0, 0)
 
         self.load(world_name)
-
-        if self.output:
-            self.start_up()
 
     @property
     def snake(self):
@@ -117,7 +113,7 @@ class SnakeGame(Environment):
     def _update(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self._is_over = False
+                self._is_over = True
                 return
 
             if event.type == pygame.KEYUP:
@@ -133,8 +129,11 @@ class SnakeGame(Environment):
                     self._ticks = 60
                 elif event.key == pygame.K_6:
                     self._ticks = -1
-                elif event.key == pygame.K_SPACE:
-                    self._pause = not self._pause
+                elif event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    self._is_over = True
+                    self._abort = True
+                    return
 
             if event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
@@ -247,3 +246,46 @@ class SnakeGame(Environment):
 
     def is_over(self):
         return self._is_over
+
+    def train(self, episodes, epsilon=0, output=True):
+        if output:
+            self.start_up()
+        for episode in range(episodes):
+            if self._abort:
+                break
+            self.reset()
+            while not self.is_over() and not self._abort:
+                state = self.observe()
+                if output:
+                    self._update()
+
+                action = self.agent.act(state, 0)
+
+                self._snake.direction.rotate(
+                    math.radians(90 * action.value))
+                self._snake.move()
+
+                reward = self.get_reward()
+
+                new_state = self.observe()
+
+                self.agent.remember(
+                    Memory(state, action, reward, new_state))
+
+    def run(self, epsilon=0, output=True):
+        if output:
+            self.start_up()
+        while not self._abort:
+            self.reset()
+            while not self.is_over():
+                state = self.observe()
+                if output:
+                    self._update()
+
+                action = self.agent.act(state, 0)
+
+                self._snake.direction.rotate(
+                    math.radians(90 * action.value))
+                self._snake.move()
+
+                self.get_reward()
