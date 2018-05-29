@@ -1,2 +1,2 @@
-from .agent import Agent, Action, Memory, MemoryTable
+from .agent import Agent, DoubleAgent, Action, Memory, MemoryTable
 from .environment import Action, Environment

@@ -42,6 +42,27 @@ class Agent:
         return self._discount_factor
 
 
+class DoubleAgent(Agent):
+    def __init__(self, learning_rate, discount_factor, actions, update_at=10000):
+        super().__init__(learning_rate, discount_factor, actions)
+        self._hidden_memories = MemoryTable(actions)
+        self._update_at = update_at
+        self._updates_remaining = update_at
+
+    def remember(self, memory):
+        self._hidden_memories.update(memory, self._learning_rate,
+                                     self._discount_factor)
+        self._updates_remaining -= 1
+        if self._updates_remaining <= 0:
+            self._updates_remaining = self._update_at
+            self._switch_memories()
+
+    def _switch_memories(self):
+        #print('Switching memories...')
+        self._memories = copy.deepcopy(self._hidden_memories)
+        # print('Done.')
+
+
 class MemoryTable:
     """Implements the core Q-learning functionality."""
 
