@@ -3,7 +3,7 @@ import argparse
 from decimal import *
 import simplejson as json
 import pygame
-from learning import Agent, Action
+from learning import Agent, DoubleAgent, Action
 from environments import SnakeGame
 
 DEFAULT_LEARN = 0.6
@@ -47,7 +47,7 @@ def train(args):
     world = args.world
 
     # Create a agent with the available actions
-    agent = Agent(Decimal(learn), Decimal(discount), ACTIONS)
+    agent = DoubleAgent(Decimal(learn), Decimal(discount), ACTIONS)
 
     date = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     if args.memory is not None:

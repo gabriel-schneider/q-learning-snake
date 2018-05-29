@@ -221,7 +221,7 @@ class SnakeGame(Environment):
         def distance(x): return min(math.floor(round(x) / 2), 3)
 
         state = []
-        direction = self._snake.direction.rotated(math.radians(-90))
+        direction = self._snake.direction.rotated(math.radians(-135))
         snake = self._snake.position()
         for _ in range(5):
             direction.rotate(math.radians(45))
@@ -267,7 +267,7 @@ class SnakeGame(Environment):
                 return Decimal('50.0')
             self._move_apple()
             return Decimal('20.0')
-        return Decimal(self._snake.position().distance(self._apple) / self._size * -1)
+        return Decimal('0')
 
     def is_over(self):
         return self._is_over
