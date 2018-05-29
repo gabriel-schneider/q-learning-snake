@@ -41,6 +41,9 @@ class Agent:
         """Return agent discount factor."""
         return self._discount_factor
 
+    def load(self, filename):
+        self.memories.load(filename)
+
 
 class DoubleAgent(Agent):
     def __init__(self, learning_rate, discount_factor, actions, update_at=10000):
@@ -58,9 +61,11 @@ class DoubleAgent(Agent):
             self._switch_memories()
 
     def _switch_memories(self):
-        #print('Switching memories...')
         self._memories = copy.deepcopy(self._hidden_memories)
-        # print('Done.')
+
+    def load(self, filename):
+        self.memories.load(filename)
+        self._hidden_memories.load(filename)
 
 
 class MemoryTable:

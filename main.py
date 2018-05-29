@@ -53,7 +53,7 @@ def train(args):
     if args.memory is not None:
         try:
             print(f'Importing existing memories from {args.memory}...')
-            agent.memories.load(f'data/memories/{args.memory}.json')
+            agent.load(f'data/memories/{args.memory}.json')
             print('Done!')
         except FileNotFoundError:
             print(
