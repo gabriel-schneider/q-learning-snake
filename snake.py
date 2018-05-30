@@ -99,4 +99,4 @@ class Snake:
     def reset(self):
         self._body = [Vector(self._start_position)]
         self._direction = Vector(self._start_direction)
-        self._grow = self._start_length
+        self._grow = self._start_length - 1

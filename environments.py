@@ -86,6 +86,7 @@ class SnakeGame(Environment):
                 for y in range(self._size):
                     if self._data[x][y] == self.DATA_EMPTY:
                         self._objective += 1
+            self._objective -= len(self._snake) + 1
 
     def save(self, filename):
         with open(filename, 'w') as file:
