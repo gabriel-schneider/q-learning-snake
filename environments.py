@@ -92,7 +92,7 @@ class SnakeGame(Environment):
         with open(filename, 'w') as file:
             world = {
                 'snake': {
-                    'position': [self._snake.position().x, self._snake.position().y],
+                    'position': [self._snake.position.x, self._snake.position.y],
                     'direction': [self._snake.direction.x, self._snake.direction.y],
                     'length': Snake.DEFAULT_LENGTH
                 },
@@ -223,7 +223,7 @@ class SnakeGame(Environment):
 
         state = []
         direction = self._snake.direction.rotated(math.radians(-135))
-        snake = self._snake.position()
+        snake = self._snake.position
         for _ in range(5):
             direction.rotate(math.radians(45))
             value, position = self._raycast_world(
@@ -252,15 +252,15 @@ class SnakeGame(Environment):
     def get_reward(self):
 
         for part in self._snake._body[1:]:
-            if part == self._snake.position():
+            if part == self._snake.position:
                 self._is_over = True
                 return Decimal('-50.0')
 
-        if self._data[self._snake.position().x][self._snake.position().y] == self.DATA_WALL:
+        if self._data[self._snake.position.x][self._snake.position.y] == self.DATA_WALL:
             self._is_over = True
             return Decimal('-50.0')
 
-        if self._snake.position() == self._apple:
+        if self._snake.position == self._apple:
             self._snake._grow += 1
             self._score += 1
             if self._score >= self._objective:

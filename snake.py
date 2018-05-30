@@ -71,6 +71,7 @@ class Snake:
 
         self.reset()
 
+    @property
     def position(self):
         return self._body[0]
 
@@ -100,3 +101,6 @@ class Snake:
         self._body = [Vector(self._start_position)]
         self._direction = Vector(self._start_direction)
         self._grow = self._start_length - 1
+
+    def __len__(self):
+        return len(self._body)
