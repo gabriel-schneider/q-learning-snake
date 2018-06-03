@@ -1,13 +1,7 @@
 class Environment:
 
-    def __init__(self, agent, training=True):
+    def __init__(self, agent):
         self._agent = agent
-        self._training = training
-
-    @property
-    def training(self):
-        """Return if the environment is in training mode."""
-        return self._training
 
     @property
     def agent(self):
