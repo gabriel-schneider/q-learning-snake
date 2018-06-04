@@ -1,7 +1,8 @@
 class Environment:
 
-    def __init__(self, agent):
+    def __init__(self, agent, reward=None):
         self._agent = agent
+        self._reward_model = reward
 
     @property
     def agent(self):
@@ -24,10 +25,11 @@ class Environment:
         """Draw the environment."""
         pass
 
-    #@TODO: This method should require the previous state and a state prime for reward calculations
-    def get_reward(self):
-        """Return a reward value based on the current environment state."""
-        pass
+    def reward(self, state, action, state_prime):
+        """Return a reward value using the reward model."""
+        if callable(self._reward_model):
+            return self._reward_model(self, state, action, state_prime)
+        return self._reward_model
 
     def is_over(self):
         """Return if the current environment state should end the episode."""
@@ -39,6 +41,11 @@ class Environment:
 
     def train(self, episodes, epsilon=0, output=True):
         """Run the environment training the agent."""
+        pass
+
+
+class Reward:
+    def __call__(self, environment, state, action, state_prime):
         pass
 
 

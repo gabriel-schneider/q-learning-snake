@@ -9,8 +9,8 @@ from snake.world import World
 
 
 class Environment(learning.environment.Environment):
-    def __init__(self, agent, world, speed=60):
-        super().__init__(agent)
+    def __init__(self, agent, world, speed=60, reward=None):
+        super().__init__(agent, reward)
         self._world = world
 
         self.score = 0
@@ -31,6 +31,21 @@ class Environment(learning.environment.Environment):
         pygame.event.clear()
 
         self._clock.tick(self._speed)
+
+        if self.world.check(self.world.snake.position, exclude=(Snake.VALUE, )) == self.world.WALL_VALUE:
+            self._is_over = True
+        else:
+            for part in self.world.snake._body[1:]:
+                if part == self.world.snake.position:
+                    self._is_over = True
+
+        if self.world.snake.position == self.world.apple.position:
+            self.world.snake._grow += 1
+            self.score += 1
+            if self.score >= self.objective:
+                self._is_over = True
+                print('WIN!')
+            self.world.apple.random()
 
         self.world.draw()
         self._display.blit(self.world.surface, (0, 0))
@@ -53,15 +68,15 @@ class Environment(learning.environment.Environment):
                 # Abort environment
                 if pygame.key.get_pressed()[pygame.K_ESCAPE]:
                     return False
-                self.update()
                 state = self.observe()
                 #print(f'{state} => {hash(state)}')
                 action = self.agent.act(state, epsilon)
                 self.world.snake.direction.rotate(
                     math.radians(90 * action.value))
                 self.world.snake.move()
-                reward = self.get_reward()
+                self.update()
                 new_state = self.observe()
+                reward = self.reward(state, action, new_state)
                 memory = Memory(state, action, reward, new_state)
                 self.agent.remember(memory)
         return True
@@ -108,27 +123,6 @@ class Environment(learning.environment.Environment):
             distance(snake.distance(self.world.apple.position))
         ))
         return tuple(state)
-
-    def get_reward(self):
-        for part in self.world.snake._body[1:]:
-            if part == self.world.snake.position:
-                self._is_over = True
-                return Decimal('-50.0')
-
-        if self.world.check(self.world.snake.position, exclude=(Snake.VALUE, )) == self.world.WALL_VALUE:
-            self._is_over = True
-            return Decimal('-50.0')
-
-        if self.world.snake.position == self.world.apple.position:
-            self.world.snake._grow += 1
-            self.score += 1
-            if self.score >= self.objective:
-                self._is_over = True
-                print('WIN!')
-                return Decimal('50.0')
-            self.world.apple.random()
-            return Decimal('20.0')
-        return Decimal('0')
 
     def is_over(self):
         return self._is_over

@@ -4,7 +4,7 @@ from decimal import *
 import simplejson as json
 import pygame
 from learning import Agent, DoubleAgent, Action
-from snake import Environment, World
+from snake import Environment, World, DefaultReward
 import os.path
 
 DEFAULT_LEARN = 0.6
@@ -81,7 +81,8 @@ def train(args):
     print('\nStarting...')
 
     world = World('data/worlds', args.unit_size)
-    environment = Environment(agent, world, speed=args.speed)
+    environment = Environment(
+        agent, world, speed=args.speed, reward=DefaultReward())
     episodes_count = 0
     status = True
     while cycles != 0 and status:
