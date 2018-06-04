@@ -60,7 +60,7 @@ def train(args):
         if os.path.isfile(filename):
             try:
                 print(
-                    f'Importing existing memories from "{args.memory}"...', end='')
+                    f'Importing existing memories from "{args.memory}"... ', end='')
                 agent.load(filename)
                 print('Done!')
             except json.JSONDecodeError as exception:
@@ -74,7 +74,7 @@ def train(args):
     print('Parameters:\n')
     print(f'\t Learning Rate: {round(learn, 3)}')
     print(f'\t Discount Factor: {round(discount, 3)}')
-    if exception == -1:
+    if cycles == -1:
         print(f'\t Cycles: endless')
     else:
         print(f'\t Cycles: {cycles} times')
@@ -97,7 +97,7 @@ def train(args):
                 break
         cycles -= 1
 
-    print('Saving memories...', end='')
+    print('Saving memories... ', end='')
     agent.memories.save(f'data/memories/{args.memory}.json')
     print('Done.')
 
