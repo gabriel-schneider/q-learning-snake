@@ -1,6 +1,6 @@
 import unittest
 import math
-from snake import Vector
+from snake.math import Vector
 
 
 class TestVector(unittest.TestCase):
@@ -11,6 +11,23 @@ class TestVector(unittest.TestCase):
         for i in range(8):
             self.assertEqual(vec, vectors[i])
             vec = vec.rotated(math.radians(45))
+
+    def test_angles(self):
+        vector = Vector(1, 0)
+        for _ in range(10):
+            print(
+                f'Vector({vector.x}, {vector.y}) -> {math.degrees(vector.angle)} / {vector.angle}')
+            vector.rotate(math.radians(90))
+
+    def test_difference(self):
+        alpha = Vector(1, 0)
+        beta = Vector(1, 0)
+
+        differences = [0, -45, -90, -135, 180, 135, 90, 45]
+        for i in range(8):
+            self.assertEqual(Vector.difference(
+                alpha.angle, beta.angle), math.radians(differences[i]))
+            beta.rotate(math.radians(-45))
 
     def test_distance_horizontal_zero_to_ten(self):
         vector_a = Vector(0, 0)
