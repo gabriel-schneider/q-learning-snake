@@ -42,7 +42,7 @@ class Apple(Entity):
         self._position = position
 
     def reset(self):
-        return self.random()                           
+        return self.random()
 
     def draw(self, surface):
         rect = (self.world.to_px(self.position.x), self.world.to_px(
@@ -109,6 +109,15 @@ class Snake(Entity):
             rect = (self.world.to_px(part.x), self.world.to_px(
                 part.y), self.world.unit_size, self.world.unit_size)
             pygame.draw.rect(surface, color, rect)
+
+    def is_colliding(self):
+        """Return if the snake is colliding with a wall or herself."""
+        if self.world.check(self.position, exclude=(self.VALUE, )) == self.world.WALL_VALUE:
+            return True
+        for part in self._body[1:]:
+            if part == self.position:
+                return True
+        return False
 
     def __len__(self):
         return len(self._body)

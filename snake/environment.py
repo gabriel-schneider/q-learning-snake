@@ -32,12 +32,7 @@ class Environment(learning.environment.Environment):
 
         self._clock.tick(self._speed)
 
-        if self.world.check(self.world.snake.position, exclude=(Snake.VALUE, )) == self.world.WALL_VALUE:
-            self._is_over = True
-        else:
-            for part in self.world.snake._body[1:]:
-                if part == self.world.snake.position:
-                    self._is_over = True
+        self._is_over = self.world.snake.is_colliding()
 
         if self.world.snake.position == self.world.apple.position:
             self.world.snake._grow += 1
@@ -90,13 +85,13 @@ class Environment(learning.environment.Environment):
                 # Abort environment
                 if pygame.key.get_pressed()[pygame.K_ESCAPE]:
                     return False
-                self.update()
+
                 state = self.observe()
                 action = self.agent.act(state, epsilon)
                 self.world.snake.direction.rotate(
                     math.radians(90 * action.value))
                 self.world.snake.move()
-                reward = self.get_reward()
+                self.update()
         return True
 
     def observe(self):
@@ -128,6 +123,8 @@ class Environment(learning.environment.Environment):
         return self._is_over
 
     def reset(self):
+        if callable(self._reward_model):
+            self._reward_model.reset()
         self.world.reset()
         self._is_over = False
         self.score = 0
