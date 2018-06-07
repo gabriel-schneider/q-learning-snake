@@ -1,11 +1,14 @@
 import datetime
 import argparse
-from decimal import *
-import simplejson as json
-import pygame
-from learning import Agent, DoubleAgent, Action
-from snake import Environment, World, DefaultReward
 import os.path
+from decimal import Decimal
+import copy
+import csv
+import statistics
+import pygame
+import simplejson as json
+from learning import Agent, DoubleAgent, Action
+from snake import Environment, World, DefaultReward, EnvironmentResults
 
 DEFAULT_LEARN = 0.6
 DEFAULT_DISCOUNT = 0.9
@@ -13,8 +16,8 @@ DEFAULT_WORLD = 'default'
 DEFAULT_EPISODES = 100
 DEFAULT_SPEED = 30
 DEFAULT_CYCLE = 1
+DEFAULT_EPSILON = 0.01
 
-# Define witch actions are available
 ACTIONS = [
     Action(-1, 'Turn Left'),
     Action(0, 'Go Foward',),
@@ -22,11 +25,26 @@ ACTIONS = [
 ]
 
 
+def import_agent_memory(agent, filename):
+    if os.path.isfile(filename):
+        try:
+            print(
+                f'Importing memories from "{filename}"... ', end='')
+            agent.load(filename)
+            print('Done!')
+            return True
+        except json.JSONDecodeError as exception:
+            print(
+                f'File {args.memory} could not be loaded!')
+            print(exception)
+    return False
+
+
 def train(args):
 
     learn = args.learn
     discount = args.discount
-    cycles = args.cycles
+    cycles_max = args.cycles
 
     if args.config is not None:
         with open(f'data/training/{args.config}.json', 'r') as file:
@@ -34,7 +52,7 @@ def train(args):
             worlds = config['worlds']
             learn = Decimal(config.get('learning', DEFAULT_LEARN))
             discount = Decimal(config.get('discount', DEFAULT_DISCOUNT))
-            cycles = config.get('repeat', DEFAULT_CYCLE)
+            cycles_max = config.get('repeat', DEFAULT_CYCLE)
     else:
         worlds = [{
             'name': args.world,
@@ -47,56 +65,64 @@ def train(args):
     if discount is None:
         discount = DEFAULT_DISCOUNT
 
-    if cycles is None:
-        cycles = DEFAULT_CYCLE
+    if cycles_max is None:
+        cycles_max = DEFAULT_CYCLE
+
+    cycles_endless = cycles_max == -1
 
     world = args.world
 
     agent = DoubleAgent(Decimal(learn), Decimal(discount), ACTIONS)
 
+    # Memory
     date = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     if args.memory is not None:
-        filename = f'data/memories/{args.memory}.json'
-        if os.path.isfile(filename):
-            try:
-                print(
-                    f'Importing existing memories from "{args.memory}"... ', end='')
-                agent.load(filename)
-                print('Done!')
-            except json.JSONDecodeError as exception:
-                print(
-                    f'File {args.memory} could not be loaded!')
-                print(exception)
+        if not import_agent_memory(agent, f'data/memories/{args.memory}.json'):
+            print('Creating new memory file!')
     else:
         args.memory = f'memories_{date}'
         print(f'Memories will be saved in "{args.memory}"')
 
     print('Parameters:\n')
-    print(f'\t Learning Rate: {round(learn, 3)}')
-    print(f'\t Discount Factor: {round(discount, 3)}')
-    if cycles == -1:
-        print(f'\t Cycles: endless')
+    print(f'\tLearning Rate: {round(learn, 3)}')
+    print(f'\tDiscount Factor: {round(discount, 3)}')
+    if cycles_endless:
+        print(f'\tCycles: endless')
     else:
-        print(f'\t Cycles: {cycles} times')
+        print(f'\tCycles: {cycles_max} times')
     print('\nStarting...')
 
     world = World('data/worlds', args.unit_size)
     environment = Environment(
         agent, world, speed=args.speed, reward=DefaultReward())
+
     episodes_count = 0
-    status = True
-    while cycles != 0 and status:
+    cycles_current = 1
+    result = EnvironmentResults()
+    results = {}
+    while (cycles_current <= cycles_max or cycles_endless) and result.abort is False:
         for world in worlds:
             name, episodes = world['name'], world['episodes']
             episodes_count += episodes
             print(
                 f'Training at {name} for {episodes} episodes... ({episodes_count})')
             environment.world.load(name)
-            status = environment.train(episodes, args.epsilon)
-            if not status:
+            result = environment.train(episodes, args.epsilon)
+            results[world['name']] = copy.deepcopy(result)
+            if result.abort:
                 pygame.quit()
                 break
-        cycles -= 1
+        cycles_current += 1
+
+        # Export Statistics
+        with open('steps_per_cycle.csv', 'a', newline='') as file:
+            writer = csv.writer(file)
+            if file.tell() == 0:
+                writer.writerow(results.keys())
+            writer.writerow([statistics.mean(x.steps)
+                             for x in results.values()])
+
+    print(repr(results))
 
     print('Saving memories... ', end='')
     agent.memories.save(f'data/memories/{args.memory}.json')
@@ -120,8 +146,8 @@ def run(args):
     world.load(args.world)
     print('\nStarting...')
 
-    environment.run(epsilon=args.epsilon)
-
+    results = environment.run(epsilon=args.epsilon)
+    print(repr(results))
     print('Done.')
 
 
@@ -149,7 +175,7 @@ train_parser.add_argument(
 train_parser.add_argument(
     '--unit-size', type=int, default=16, help='Environment grid size')
 train_parser.add_argument(
-    '--epsilon', type=float, default=0.01, help='Epsilon')
+    '--epsilon', type=float, default=DEFAULT_EPSILON, help='Epsilon')
 train_parser.set_defaults(func=train)
 
 
@@ -164,7 +190,7 @@ run_parser.add_argument(
 run_parser.add_argument(
     '--unit-size', type=int, default=16, help='Environment grid size')
 run_parser.add_argument(
-    '--epsilon', type=float, default=0.01, help='Epsilon')
+    '--epsilon', type=float, default=DEFAULT_EPSILON, help='Epsilon')
 run_parser.set_defaults(func=run)
 
 if __name__ == '__main__':
