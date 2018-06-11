@@ -131,7 +131,7 @@ def train(args):
 
 def run(args):
 
-    agent = Agent(0, 0, ACTIONS)
+    agent = learning.agent.Agent(0, 0, ACTIONS)
 
     try:
         print(f'Importing existing memories from {args.memory}...', end='')
