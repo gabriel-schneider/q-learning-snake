@@ -6,7 +6,6 @@ from learning import Memory
 from snake.objects import Apple, Snake
 from snake.math import Vector
 from snake.world import World
-from stats import StatsManager
 import statistics
 
 
