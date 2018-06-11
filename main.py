@@ -7,8 +7,8 @@ import csv
 import statistics
 import pygame
 import simplejson as json
-from learning import Agent, DoubleAgent, Action
-from snake import Environment, World, DefaultReward, EnvironmentResults
+import learning
+import snake
 
 DEFAULT_LEARN = 0.6
 DEFAULT_DISCOUNT = 0.9
@@ -19,9 +19,9 @@ DEFAULT_CYCLE = 1
 DEFAULT_EPSILON = 0.01
 
 ACTIONS = [
-    Action(-1, 'Turn Left'),
-    Action(0, 'Go Foward',),
-    Action(1, 'Turn Right')
+    learning.environment.Action(-1, 'Turn Left'),
+    learning.environment.Action(0, 'Go Foward',),
+    learning.environment.Action(1, 'Turn Right')
 ]
 
 
@@ -72,7 +72,7 @@ def train(args):
 
     world = args.world
 
-    agent = DoubleAgent(Decimal(learn), Decimal(discount), ACTIONS)
+    agent = learning.agent.Agent(Decimal(learn), Decimal(discount), ACTIONS)
 
     # Memory
     date = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -92,13 +92,13 @@ def train(args):
         print(f'\tCycles: {cycles_max} times')
     print('\nStarting...')
 
-    world = World('data/worlds', args.unit_size)
-    environment = Environment(
-        agent, world, speed=args.speed, reward=DefaultReward())
+    world = snake.environment.World('data/worlds', args.unit_size)
+    environment = snake.environment.Environment(
+        agent, world, speed=args.speed)
 
     episodes_count = 0
     cycles_current = 1
-    result = EnvironmentResults()
+    result = learning.environment.Results()
     results = {}
     while (cycles_current <= cycles_max or cycles_endless) and result.abort is False:
         for world in worlds:
@@ -141,8 +141,8 @@ def run(args):
         print(f'File {args.memory} not found, cannot continue...')
         exit(1)
 
-    world = World('data/worlds', args.unit_size)
-    environment = Environment(agent, world, speed=args.speed)
+    world = snake.environment.World('data/worlds', args.unit_size)
+    environment = snake.environment.Environment(agent, world, speed=args.speed)
     world.load(args.world)
     print('\nStarting...')
 

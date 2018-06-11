@@ -1,22 +1,21 @@
 import math
-from decimal import Decimal
+import statistics
 import pygame
-import learning.environment
-from learning import Memory
+import learning
 from snake.objects import Apple, Snake
 from snake.math import Vector
 from snake.world import World
-import statistics
+from snake.rewards import DefaultReward
 
 
-class EnvironmentResults:
+class Results(learning.environment.Results):
     def __init__(self):
+        super().__init__()
         self.episodes = 0
         self.steps = []
         self.wins = 0
         self.loses = 0
         self.scores = []
-        self.abort = False
 
     def __repr__(self):
         data = [
@@ -44,6 +43,9 @@ class Environment(learning.environment.Environment):
 
         self._speed = speed
         self._clock = pygame.time.Clock()
+
+        if self._reward_model is None:
+            self._reward_model = DefaultReward()
 
     @property
     def world(self) -> World:
@@ -80,7 +82,7 @@ class Environment(learning.environment.Environment):
 
     def train(self, episodes, epsilon=0, output=True):
         self.initialize()
-        results = EnvironmentResults()
+        results = Results()
         for episode in range(episodes):
             if results.abort:
                 break
@@ -103,7 +105,8 @@ class Environment(learning.environment.Environment):
                 self.update(results)
                 new_state = self.observe()
                 reward = self.reward(state, action, new_state)
-                memory = Memory(state, action, reward, new_state)
+                memory = learning.agent.Memory(
+                    state, action, reward, new_state)
                 self.agent.remember(memory)
             results.scores.append(self.score)
             results.steps.append(steps)
@@ -111,7 +114,7 @@ class Environment(learning.environment.Environment):
 
     def run(self, epsilon=0):
         self.initialize()
-        results = EnvironmentResults()
+        results = Results()
         while results.abort is False:
             self.reset()
             results.episodes += 1

@@ -1,5 +1,12 @@
-class Environment:
+import abc
 
+
+class Results(abc.ABC):
+    def __init__(self):
+        self.abort = False
+
+
+class Environment(abc.ABC):
     def __init__(self, agent, reward=None):
         self._agent = agent
         self._reward_model = reward
@@ -35,22 +42,22 @@ class Environment:
         """Return if the current environment state should end the episode."""
         pass
 
-    def run(self, epsilon=0, output=True):
-        """Run the environment without training the agent."""
+    def run(self, epsilon=0, output=True) -> Results:
+        """Return results of a regular run."""
         pass
 
-    def train(self, episodes, epsilon=0, output=True):
-        """Run the environment training the agent."""
+    def train(self, episodes, epsilon=0, output=True) -> Results:
+        """Return results of a training session."""
         pass
 
 
-class Reward:
+class Reward(abc.ABC):
     def __call__(self, environment, state, action, state_prime):
         pass
 
 
 class Action:
-    """Represent a action that the agnet can execute in the environment."""
+    """Represent a action that the agent can execute in the environment."""
 
     def __init__(self, value, description, weight=0):
         self._value = value
