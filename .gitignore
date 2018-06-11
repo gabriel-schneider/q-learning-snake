@@ -1,4 +1,5 @@
 data/memories/*
+__pycache__
 *.pyo
 *.pio
-__pycache__
+*.csv
