@@ -54,6 +54,18 @@ class World:
     def loaded(self):
         return self._structure and self.size > 0
 
+    def snapshot(self):
+        structure = ''
+        for row in self._structure:
+            for value in row:
+                structure += str(value)
+
+        snake = '|'.join([f'{p.x};{p.y}' for p in self.snake._body])
+
+        apple = f'{self.apple.position.x};{self.apple.position.y}'
+
+        return '-'.join([structure, snake, apple])
+
     def to_px(self, value):
         if isinstance(value, (tuple, list)):
             return map(self.to_px, value)

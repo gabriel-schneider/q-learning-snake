@@ -11,12 +11,13 @@ class DefaultReward(learning.environment.Reward):
 
         if environment.is_over():
             if environment.score < environment.objective:
-                return Decimal('-50.0')
-            return Decimal('100.0')
+                return Decimal('-10.0')
+            print('WIN!!!')
+            return Decimal('+10.0')
 
         if environment.score > self._last_score:
             self._last_score = environment.score
-            return Decimal('20.0')
+            return Decimal('+5.0')
 
         return Decimal('0.0')
 

@@ -1,2 +1,3 @@
-from .agent import Agent, DoubleAgent, Action, Memory, MemoryTable
+from .agent import Agent, Action
 from .environment import Action, Environment
+from .memory import SingleMemoryTable, DoubleMemoryTable

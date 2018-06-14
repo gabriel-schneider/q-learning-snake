@@ -1,3 +1,4 @@
+import copy
 import math
 import statistics
 import pygame
@@ -51,10 +52,10 @@ class Environment(learning.environment.Environment):
     def world(self) -> World:
         return self._world
 
-    def update(self, results):
-        pygame.event.clear()
-
-        self._clock.tick(self._speed)
+    def update(self, results, output):
+        if output:
+            pygame.event.clear()
+            self._clock.tick(self._speed)
 
         self._is_over = self.world.snake.is_colliding()
         if self._is_over:
@@ -73,15 +74,16 @@ class Environment(learning.environment.Environment):
         self._display.blit(self.world.surface, (0, 0))
         pygame.display.flip()
 
-    def initialize(self):
-        size = self.world.to_px(self.world.size)
-        self._display = pygame.display.set_mode((size, size))
+    def initialize(self, output):
+        if output:
+            size = self.world.to_px(self.world.size)
+            self._display = pygame.display.set_mode((size, size))
 
         self.objective = sum(row.count(self.world.EMPTY_VALUE)
                              for row in self.world._structure) - 1 - self.world.snake._start_length
 
     def train(self, episodes, epsilon=0, output=True):
-        self.initialize()
+        self.initialize(output)
         results = Results()
         for episode in range(episodes):
             if results.abort:
@@ -91,29 +93,31 @@ class Environment(learning.environment.Environment):
             steps = 0
             while not self.is_over():
                 steps += 1
-                self.draw()
+                if output:
+                    self.draw()
 
-                if pygame.key.get_pressed()[pygame.K_ESCAPE]:
-                    results.abort = True
-                    break
+                if output:
+                    if pygame.key.get_pressed()[pygame.K_ESCAPE]:
+                        results.abort = True
+                        break
                 state = self.observe()
 
                 action = self.agent.act(state, epsilon)
+
                 self.world.snake.direction.rotate(
-                    math.radians(90 * action.value))
+                    math.radians(90 * action))
                 self.world.snake.move()
-                self.update(results)
+                self.update(results, output)
                 new_state = self.observe()
                 reward = self.reward(state, action, new_state)
-                memory = learning.agent.Memory(
-                    state, action, reward, new_state)
-                self.agent.remember(memory)
+                self.agent.remember(state, action, reward, new_state)
             results.scores.append(self.score)
             results.steps.append(steps)
+            #print(f'{episode} - {steps} => {sum(results.steps) / len(results.steps)}')
         return results
 
     def run(self, epsilon=0):
-        self.initialize()
+        self.initialize(True)
         results = Results()
         while results.abort is False:
             self.reset()
@@ -132,12 +136,13 @@ class Environment(learning.environment.Environment):
                 self.world.snake.direction.rotate(
                     math.radians(90 * action.value))
                 self.world.snake.move()
-                self.update(results)
+                self.update(results, True)
             results.scores.append(self.score)
             results.steps.append(steps)
         return results
 
     def observe(self):
+        # return self.world.snapshot()
         def distance(x): return min(math.floor(round(x) / 2), 3)
 
         state = []
