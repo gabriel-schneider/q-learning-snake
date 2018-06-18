@@ -145,7 +145,7 @@ class BaseMemoryTable(abc.ABC):
         """Return a action for a state using probabilities."""
         if not self.exists(state):
             # self.initialize_state(state)
-            print(f'{state} dont exists!')
+            #print(f'{state} dont exists!')
             return self.random()
 
         actions = self.actions(state)
