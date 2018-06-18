@@ -3,6 +3,12 @@ from decimal import Decimal
 from snake.objects import Snake, Apple
 
 
+def create(name='default'):
+    if name == 'distance':
+        return DistanceReward()
+    return DefaultReward()
+
+
 class DefaultReward(learning.environment.Reward):
     def __init__(self):
         self._last_score = 0

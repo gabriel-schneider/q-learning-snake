@@ -93,7 +93,12 @@ class Environment(learning.environment.Environment):
         self.objective = sum(row.count(self.world.EMPTY_VALUE)
                              for row in self.world._structure) - 1 - self.world.snake._start_length
 
-    def train(self, episodes, epsilon=0, output=True):
+    def _get_epsilon_value(self, epsilon, args):
+        if callable(epsilon):
+            return epsilon(*args)
+        return float(epsilon)
+
+    def execute(self, training, episodes=100, epsilon=0, epsilon_args=(), output=True):
         self.initialize(output)
         results = Results()
         for episode in range(episodes):
@@ -103,8 +108,7 @@ class Environment(learning.environment.Environment):
             self.reset()
             results.episodes = episode
             steps = 0
-
-            # Enquanto o estado do ambiente não for terminal
+                      
             while not self.is_over():
                 steps += 1
                 if output:
@@ -114,42 +118,19 @@ class Environment(learning.environment.Environment):
                     if pygame.key.get_pressed()[pygame.K_ESCAPE]:
                         results.abort = True
                         break
+                        
                 state = self.observe()
-
-                action = self.agent.act(state, epsilon)
+                action = self.agent.act(state, self._get_epsilon_value(epsilon, epsilon_args))
 
                 self.world.snake.direction.rotate(
                     math.radians(90 * action))
                 self.world.snake.move()
                 self.update(results, output)
                 new_state = self.observe()
-                reward = self.reward(state, action, new_state)
-                self.agent.remember(state, action, reward, new_state)
-            results.scores.append(self.score)
-            results.steps.append(steps)
-        return results
 
-    def run(self, epsilon=0):
-        self.initialize(True)
-        results = Results()
-        while results.abort is False:
-            self.reset()
-            results.episodes += 1
-            steps = 0
-            while not self.is_over():
-                steps += 1
-                self.draw()
-
-                if pygame.key.get_pressed()[pygame.K_ESCAPE]:
-                    results.abort = True
-                    break
-
-                state = self.observe()
-                action = self.agent.act(state, epsilon)
-                self.world.snake.direction.rotate(
-                    math.radians(90 * action.value))
-                self.world.snake.move()
-                self.update(results, True)
+                if training:
+                    reward = self.reward(state, action, new_state)
+                    self.agent.remember(state, action, reward, new_state)
             results.scores.append(self.score)
             results.steps.append(steps)
         return results
