@@ -20,7 +20,6 @@ class DefaultReward(learning.environment.Reward):
                 return Decimal('-10.0')
             if environment.score < environment.objective:
                 return Decimal('-10.0')
-            print('WIN!!!')
             return Decimal('+10.0')
 
         if environment.score > self._last_score:

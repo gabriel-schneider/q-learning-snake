@@ -9,7 +9,7 @@ VIEW_ENABLE = True
 EPSILON = None
 
 # Training defaults
-CYCLES = 1
+CYCLES = None
 EPISODES = 100
 LEARN = 0.75
 DISCOUNT = 0.9
@@ -37,31 +37,38 @@ parser.add_argument(
 parser.add_argument(
     '--epsilon',
     default=EPSILON,
-    type=str,
-    help='aka. "ignore-the-policy" probability',
+    help='aka. "ignore-the-policy" probability or a name function for it',
 )
 parser.add_argument('--cycles', default=CYCLES, type=int, help='Number of sessions')
+parser.add_argument('--config', default=None, help='Configuration file for complex stuff')
+
+parser.add_argument(
+    '--episodes',
+    #default=EPISODES,
+    type=int,
+    help='How many episodes a training session should train',
+)
+parser.add_argument(
+    '--learn', default=LEARN, type=float, help='Agent learning ratio'
+)
+parser.add_argument(
+    '--discount', default=DISCOUNT, type=float, help='Agent discount factor'
+)
+parser.add_argument('--reward', default=REWARD, help='Reward model name')
+
 subparsers = parser.add_subparsers()
 
 # Training
 train_parser = subparsers.add_parser(
     'train', help='Train a agent to play the snake game', parents=[parser]
 )
-train_parser.add_argument(
-    '--episodes',
-    default=EPISODES,
-    type=int,
-    help='How many episodes a training session should train',
-)
-train_parser.add_argument(
-    '--learn', default=LEARN, type=float, help='Agent learning ratio'
-)
-train_parser.add_argument(
-    '--discount', default=DISCOUNT, type=float, help='Agent discount factor'
-)
-train_parser.add_argument('--reward', default=REWARD, help='Reward model name')
 train_parser.set_defaults(func=app.handle, command='train')
 
+# Run
+run_parser = subparsers.add_parser(
+    'run', help='Make a agent play in the environment without training', parents=[parser]
+)
+run_parser.set_defaults(func=app.handle, command='run')
 
 if __name__ == '__main__':
     arg = parser.parse_args()

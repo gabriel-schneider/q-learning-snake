@@ -1,0 +1,35 @@
+{
+	"name": "Example Configuration",
+	"cycles": 20,
+	"agent": {
+		"learning": 0.7,
+		"discount": 0.85
+	},
+	"environment": {
+		"reward_model": "distance"
+	},
+	"memory_table": {
+		"name": "double",
+		"adapters": [
+			{
+				"name": "dict",
+				"args": []
+			},
+			{
+				"name": "redis",
+				"args": ["localhost", 0]
+			}
+		],
+		"args": [5000]
+	},
+	"worlds": [
+		{
+			"name": "close",
+			"episodes": 200
+		},
+		{
+			"name": "default",
+			"episodes": 200
+		}
+	]
+}

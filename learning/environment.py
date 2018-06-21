@@ -42,12 +42,8 @@ class Environment(abc.ABC):
         """Return if the current environment state should end the episode."""
         pass
 
-    def run(self, epsilon=0, output=True) -> Results:
-        """Return results of a regular run."""
-        pass
-
-    def train(self, episodes, epsilon=0, output=True) -> Results:
-        """Return results of a training session."""
+    def execute(self, training, episodes=100, epsilon=0, epsilon_args=(), output=True):
+        """Return results about the environment execution."""
         pass
 
 

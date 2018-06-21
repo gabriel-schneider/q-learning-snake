@@ -7,6 +7,10 @@ import simplejson as json
 from decimal import Decimal
 import itertools
 
+def create_adapter(name, args=[]):
+    if name == 'redis':
+        return RedisMemoryStorageAdapter(*args)
+    return DictMemoryStorageAdapter()
 
 class BaseMemoryStorageAdapter(abc.ABC):
     def get(self, key):
@@ -117,9 +121,13 @@ class RedisMemoryStorageAdapter(BaseMemoryStorageAdapter):
     def load(self, filename):
         return True
 
+def create_memory_table(name, actions, args):
+    if name == 'double':
+        return DoubleMemoryTable(actions, *args)
+    return SingleMemoryTable(actions, *args)
 
 class BaseMemoryTable(abc.ABC):
-    def __init__(self, adapter: BaseMemoryStorageAdapter, actions: list):
+    def __init__(self, actions: list, adapter: BaseMemoryStorageAdapter):
         self._adapter = adapter
         self._actions = actions
 
@@ -192,15 +200,14 @@ class SingleMemoryTable(BaseMemoryTable):
 
 
 class DoubleMemoryTable(BaseMemoryTable):
-    def __init__(self, adapter: BaseMemoryStorageAdapter, hidden_adapter: BaseMemoryStorageAdapter, actions: list, delay: int):
-        super().__init__(adapter, actions)
-        self._hidden_memory_table = SingleMemoryTable(hidden_adapter, actions)
+    def __init__(self, actions: list, adapter: BaseMemoryStorageAdapter, hidden_adapter: BaseMemoryStorageAdapter, delay: int):
+        super().__init__(actions, adapter)
+        self._hidden_memory_table = SingleMemoryTable(actions, hidden_adapter)
         self._delay = 0
         self._max_delay = delay
 
     def _refresh(self):
         """Update active adapter with changes made in the hidden adapter."""
-        print('Refreshing!!!')
         for key in self._hidden_memory_table.adapter.keys():
             self.adapter.set(key, self._hidden_memory_table.adapter.get(key))
         self._hidden_memory_table.adapter.clear()
