@@ -1,0 +1,43 @@
+{
+	"name": "Single Memory Table, Default Reward Model",
+	"cycles": 100,
+	"agent": {
+		"learning": 0.75,
+		"discount": 0.9
+	},
+	"environment": {
+		"reward_model": "default"
+	},
+	"memory_table": {
+		"name": "single",
+		"adapters": [
+			{
+				"name": "dict",
+				"args": []
+			}
+		],
+		"args": []
+	},
+	"worlds": [
+		{
+			"name": "close",
+			"episodes": 200
+		},
+		{
+			"name": "default",
+			"episodes": 200
+		},
+		{
+			"name": "coliseum",
+			"episodes": 200
+		},
+		{
+			"name": "cross",
+			"episodes": 200
+		},
+		{
+			"name": "dot",
+			"episodes": 200
+		}
+	]
+}
