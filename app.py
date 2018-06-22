@@ -7,6 +7,7 @@ from decimal import Decimal
 import epsilons
 import learning
 import snake
+import random
 
 
 ACTIONS = [-1, 0, 1]
@@ -45,8 +46,13 @@ def export_cycle_results(cycle, results, filename):
     return export_results(['cycle', 'steps', 'score', 'wins', 'loses', 'starves'], data, filename)
 
 def generate_memory_filename():
-    """Return a formated memory filename."""
-    return f'memory_{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
+    """Return a random memory filename."""
+    with open('data/names.txt', 'r') as file:
+        names = file.read().splitlines()
+        random.shuffle(names)
+
+    #return f'memory_{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
+    return ''.join([x.capitalize() for x in names[:4]])
 
 
 def load_memory(memory_table, filename):
@@ -172,9 +178,17 @@ def handle(arguments):
         memory_filename = f'data/memories/{arguments.memory}'
         print(f'Generating file "{arguments.memory}" as memory!')
 
-    stats_directory = f'data/stats/{arguments.memory}'
-    if not os.path.exists(stats_directory):
-        os.makedirs(stats_directory)
+    if not arguments.no_stats:
+        if arguments.stats_dir:
+            stats_directory = f'data/statistics/{arguments.stats_dir}'
+        else:
+            stats_directory = f'data/statistics/{arguments.memory}/{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
+        print(f'Statistics will be saved at: {stats_directory}')
+
+        if not os.path.exists(stats_directory):
+            os.makedirs(stats_directory)
+    else:
+        print("Statistics output are disabled!")
 
     cycles_left = cycles_max
     try:
@@ -191,11 +205,13 @@ def handle(arguments):
                     if results.abort:
                         raise AbortException
 
-                    export_world_results(cycles_current, results, f'{stats_directory}/{world["name"]}.csv')
+                    if not arguments.no_stats:
+                        export_world_results(cycles_current, results, f'{stats_directory}/{world["name"]}.csv')
                     worlds_results.append(results)
             except AbortException:
                 break
-            export_cycle_results(cycles_current, worlds_results, f'{stats_directory}/results.csv')
+            if not arguments.no_stats:
+                export_cycle_results(cycles_current, worlds_results, f'{stats_directory}/results.csv')
             cycles_left -= 1
     except KeyboardInterrupt:
         pass

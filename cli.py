@@ -55,6 +55,8 @@ parser.add_argument(
     '--discount', default=DISCOUNT, type=float, help='Agent discount factor'
 )
 parser.add_argument('--reward', default=REWARD, help='Reward model name')
+parser.add_argument('--stats-dir', default=None, help='Directory for statistics output')
+parser.add_argument('--no-stats', action='store_true', help='Disables statistics output')
 
 subparsers = parser.add_subparsers()
 
